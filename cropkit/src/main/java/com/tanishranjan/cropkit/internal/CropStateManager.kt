@@ -231,6 +231,7 @@ internal class CropStateManager(
         }
     }
 
+
     private fun setState(
         canvasSize: Size,
         bitmap: Bitmap
@@ -257,7 +258,7 @@ internal class CropStateManager(
             contentScale = contentScale
         )
 
-        val newBitmap = bitmap.scale(scaledSize.width.toInt(), scaledSize.height.toInt())
+        val scaledBitmap = bitmap.scale(scaledSize.width.toInt(), scaledSize.height.toInt())
 
         // Center within available space, then add padding offset
         val offsetX = contentPadding + (availableWidth - scaledSize.width) / 2f
@@ -299,12 +300,12 @@ internal class CropStateManager(
         _state.update {
             it.copy(
                 canvasSize = canvasSize,
-                bitmap = newBitmap,
+                bitmap = bitmap,
                 imageRect = Rect(
                     Offset(offsetX, offsetY),
                     Size(scaledSize.width, scaledSize.height)
                 ),
-                imageBitmap = newBitmap.asImageBitmap(),
+                imageBitmap = scaledBitmap.asImageBitmap(),
                 cropRect = cropRect,
                 handles = GestureUtils.getNewHandleMeasures(cropRect, handleRadiusPx),
                 gridlinesActive = gridLinesVisibility == GridLinesVisibility.ALWAYS,
@@ -315,7 +316,6 @@ internal class CropStateManager(
                 }
             )
         }
-
     }
 
     companion object {
