@@ -25,13 +25,14 @@ import kotlinx.coroutines.launch
 
 internal class CropStateManager(
     bitmap: Bitmap,
+    initialCropRect: Rect = Rect.Zero,
     private val cropShape: CropShape,
     private val contentScale: ContentScale,
     private val gridLinesVisibility: GridLinesVisibility,
     private val handleRadius: Dp,
     private val touchPadding: Dp
 ) {
-    private val _state = MutableStateFlow(CropState(bitmap))
+    private val _state = MutableStateFlow(CropState(bitmap = bitmap, cropRect = initialCropRect))
     val state = _state.asStateFlow()
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
     private var dragMode: DragMode = DragMode.None
@@ -40,7 +41,7 @@ internal class CropStateManager(
     private var dragOffset: Offset = Offset.Zero
 
     init {
-        reset(bitmap)
+        reset(bitmap, initialCropRect)
     }
 
     fun updateCanvasSize(canvasSize: Size) {
@@ -222,11 +223,12 @@ internal class CropStateManager(
         return null
     }
 
-    private fun reset(bitmap: Bitmap) {
+    private fun reset(bitmap: Bitmap, initialCropRect: Rect? = null) {
         coroutineScope.launch {
             setState(
                 state.value.canvasSize,
-                bitmap
+                bitmap,
+                initialCropRect
             )
         }
     }
@@ -234,7 +236,8 @@ internal class CropStateManager(
 
     private fun setState(
         canvasSize: Size,
-        bitmap: Bitmap
+        bitmap: Bitmap,
+        initialCropRect: Rect? = null
     ) {
 
         if (canvasSize == Size.Zero) {
@@ -295,7 +298,10 @@ internal class CropStateManager(
             cropSize = Size(scaledSize.width, scaledSize.height)
             cropOffset = Offset(offsetX, offsetY)
         }
-        val cropRect = Rect(cropOffset, cropSize)
+
+        val cropRect =
+            if (initialCropRect != null && initialCropRect != Rect.Zero) initialCropRect
+            else Rect(cropOffset, cropSize)
 
         _state.update {
             it.copy(

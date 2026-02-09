@@ -1,8 +1,8 @@
 package com.tanishranjan.cropkit
 
 import android.graphics.Bitmap
-import com.tanishranjan.cropkit.internal.CropStateManager
 import com.tanishranjan.cropkit.internal.CropStateChangeActions
+import com.tanishranjan.cropkit.internal.CropStateManager
 
 /**
  * CropController is the main class that is used to interact with the [ImageCropper].
@@ -19,6 +19,7 @@ class CropController(
 
     private val stateManager: CropStateManager = CropStateManager(
         bitmap = bitmap,
+        initialCropRect = cropOptions.initialCropRect,
         cropShape = cropOptions.cropShape,
         contentScale = cropOptions.contentScale,
         gridLinesVisibility = cropOptions.gridLinesVisibility,
@@ -35,6 +36,11 @@ class CropController(
      * Returns the cropped bitmap.
      */
     fun crop(): Bitmap = stateManager.crop()
+
+    /**
+     * Returns the coordinates of the crop rectangle.
+     */
+    fun getCropRect() = state.value.cropRect
 
     /**
      * Rotates the bitmap clockwise in the ImageCropper.
