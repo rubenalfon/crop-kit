@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 
 internal class CropStateManager(
     bitmap: Bitmap,
-    initialCropData: CropData = CropData.Zero,
+    private val initialCropData: CropData = CropData.Zero,
     private val cropShape: CropShape,
     private val contentScale: ContentScale,
     private val gridLinesVisibility: GridLinesVisibility,
@@ -46,8 +46,9 @@ internal class CropStateManager(
     }
 
     fun updateCanvasSize(canvasSize: Size) {
-        setState(canvasSize, state.value.bitmap)
+        setState(canvasSize, state.value.bitmap, initialCropData = initialCropData)
     }
+
 
     fun crop(): Bitmap {
         val state = state.value
