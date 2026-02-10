@@ -19,7 +19,7 @@ class CropController(
 
     private val stateManager: CropStateManager = CropStateManager(
         bitmap = bitmap,
-        initialCropRect = cropOptions.initialCropRect,
+        initialCropData = cropOptions.initialCropData,
         cropShape = cropOptions.cropShape,
         contentScale = cropOptions.contentScale,
         gridLinesVisibility = cropOptions.gridLinesVisibility,
@@ -38,9 +38,9 @@ class CropController(
     fun crop(): Bitmap = stateManager.crop()
 
     /**
-     * Returns the coordinates of the crop rectangle.
+     * Returns a [CropData] object that represents the current crop rectangle.
      */
-    fun getCropRect() = state.value.cropRect
+    fun getCropData(): CropData = stateManager.calculateCropDataFromRect()
 
     /**
      * Rotates the bitmap clockwise in the ImageCropper.

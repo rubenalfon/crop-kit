@@ -1,6 +1,5 @@
 package com.tanishranjan.cropkit
 
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
@@ -12,7 +11,7 @@ object CropDefaults {
      * Default crop options for [ImageCropper].
      */
     fun cropOptions(
-        initialCropRect: Rect = Rect.Zero,
+        initialCropData: CropData = CropData.Zero,
         cropShape: CropShape = CropShape.Original,
         contentScale: ContentScale = ContentScale.Fit,
         gridLinesVisibility: GridLinesVisibility = GridLinesVisibility.ON_TOUCH,
@@ -20,7 +19,7 @@ object CropDefaults {
         handleRadius: Dp = 8.dp,
         touchPadding: Dp = 20.dp
     ) = CropOptions(
-        initialCropRect = initialCropRect,
+        initialCropData = initialCropData,
         cropShape = cropShape,
         contentScale = contentScale,
         gridLinesVisibility = gridLinesVisibility,

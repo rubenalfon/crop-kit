@@ -46,10 +46,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.tanishranjan.cropkit.CropData
 import com.tanishranjan.cropkit.CropDefaults
 import com.tanishranjan.cropkit.CropRatio
 import com.tanishranjan.cropkit.CropShape
@@ -68,7 +68,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             CropKitTheme {
-                var savedCropRect by remember { mutableStateOf(Rect.Zero) }
+                var cropData: CropData by remember { mutableStateOf(CropData.Zero) }
 
                 var image: Bitmap? by remember { mutableStateOf(null) }
                 var cropShape: CropShape by remember { mutableStateOf(CropShape.Original) }
@@ -77,7 +77,7 @@ class MainActivity : ComponentActivity() {
                     rememberCropController(
                         bitmap = it,
                         cropOptions = CropDefaults.cropOptions(
-                            initialCropRect = savedCropRect,
+                            initialCropData = cropData,
                             cropShape = cropShape,
                             gridLinesType = gridLinesType
                         )
@@ -113,14 +113,9 @@ class MainActivity : ComponentActivity() {
                                 }
                                 IconButton(
                                     onClick = {
-                                        val cropRect = cropController?.getCropRect()
-                                        cropRect?.let {
-                                            savedCropRect = it
+                                        cropController?.getCropData()?.let {
+                                            cropData = it
                                         }
-                                        if (cropRect != null) {
-                                            savedCropRect = cropRect
-                                        }
-
                                     }
                                 ) {
                                     Icon(
@@ -155,7 +150,7 @@ class MainActivity : ComponentActivity() {
                         ) {
 
                             Text(
-                                savedCropRect.toString()
+                                cropData.toString()
                             )
                             Column(
                                 modifier = Modifier

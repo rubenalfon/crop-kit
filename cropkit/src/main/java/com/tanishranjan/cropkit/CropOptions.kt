@@ -1,13 +1,12 @@
 package com.tanishranjan.cropkit
 
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 
 /**
  * Options for configuring the [ImageCropper].
  *
- * @param initialCropRect The initial crop rectangle to be displayed.
+ * @param initialCropData The initial [CropData] rectangle to be displayed.
  * @param cropShape The shape of the crop area.
  * @param contentScale The scale type of the image content.
  * @param gridLinesVisibility The gridlines visibility mode.
@@ -16,7 +15,7 @@ import androidx.compose.ui.unit.Dp
  * @param touchPadding The padding around the drag handles to increase the touch area.
  */
 data class CropOptions(
-    val initialCropRect: Rect = Rect.Zero,
+    val initialCropData: CropData = CropData.Zero,
     val cropShape: CropShape,
     val contentScale: ContentScale,
     val gridLinesVisibility: GridLinesVisibility,

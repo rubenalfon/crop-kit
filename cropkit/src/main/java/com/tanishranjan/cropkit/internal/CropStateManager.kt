@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.core.graphics.scale
+import com.tanishranjan.cropkit.CropData
 import com.tanishranjan.cropkit.CropShape
 import com.tanishranjan.cropkit.GridLinesVisibility
 import com.tanishranjan.cropkit.util.Extensions.coerceInOrderAgnostic
@@ -25,14 +26,14 @@ import kotlinx.coroutines.launch
 
 internal class CropStateManager(
     bitmap: Bitmap,
-    initialCropRect: Rect = Rect.Zero,
+    initialCropData: CropData = CropData.Zero,
     private val cropShape: CropShape,
     private val contentScale: ContentScale,
     private val gridLinesVisibility: GridLinesVisibility,
     private val handleRadius: Dp,
     private val touchPadding: Dp
 ) {
-    private val _state = MutableStateFlow(CropState(bitmap = bitmap, cropRect = initialCropRect))
+    private val _state = MutableStateFlow(CropState(bitmap = bitmap))
     val state = _state.asStateFlow()
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
     private var dragMode: DragMode = DragMode.None
@@ -41,7 +42,7 @@ internal class CropStateManager(
     private var dragOffset: Offset = Offset.Zero
 
     init {
-        reset(bitmap, initialCropRect)
+        reset(bitmap, initialCropData)
     }
 
     fun updateCanvasSize(canvasSize: Size) {
@@ -49,31 +50,65 @@ internal class CropStateManager(
     }
 
     fun crop(): Bitmap {
-
         val state = state.value
         val bitmap = state.bitmap
-        val imageRect = state.imageRect
-        val cropRect = state.cropRect
 
+        val cropData = calculateCropDataFromRect(
+            bitmap = bitmap
+        )
+
+        return applyCrop(
+            bitmap = bitmap,
+            cropData = cropData
+        )
+    }
+
+    fun calculateCropDataFromRect(
+        cropRect: Rect = state.value.cropRect,
+        bitmap: Bitmap = state.value.bitmap,
+        imageRect: Rect = state.value.imageRect
+    ): CropData {
         val scaleX = bitmap.width / imageRect.width
         val scaleY = bitmap.height / imageRect.height
 
-        val cropX = ((cropRect.left - imageRect.left) * scaleX).toInt()
-        val cropY = ((cropRect.top - imageRect.top) * scaleY).toInt()
-        val cropWidth = (cropRect.width * scaleX).toInt()
-        val cropHeight = (cropRect.height * scaleY).toInt()
+        val realX = ((cropRect.left - imageRect.left) * scaleX).toInt()
+        val realY = ((cropRect.top - imageRect.top) * scaleY).toInt()
+        val realW = (cropRect.width * scaleX).toInt()
+        val realH = (cropRect.height * scaleY).toInt()
 
-        val x = cropX.coerceIn(0, bitmap.width)
-        val y = cropY.coerceIn(0, bitmap.height)
-        val width = cropWidth.coerceIn(0, bitmap.width - x)
-        val height = cropHeight.coerceIn(0, bitmap.height - y)
+        return CropData(realX, realY, realW, realH)
+    }
 
-        return Bitmap.createBitmap(
-            bitmap,
-            x, y,
-            width, height
+    fun calculateRectFromCropData(
+        cropData: CropData,
+        bitmap: Bitmap = state.value.bitmap,
+        imageRect: Rect = state.value.imageRect
+    ): Rect {
+        val scaleX = imageRect.width / bitmap.width
+        val scaleY = imageRect.height / bitmap.height
+
+        val top = (cropData.y * scaleY) + imageRect.top
+        val left = (cropData.x * scaleX) + imageRect.left
+        val width = cropData.width * scaleX
+        val height = cropData.height * scaleY
+
+        return Rect(
+            left = left,
+            top = top,
+            right = left + width,
+            bottom = top + height
         )
+    }
 
+    private fun applyCrop(bitmap: Bitmap, cropData: CropData): Bitmap {
+        val x = cropData.x.coerceIn(0, bitmap.width)
+        val y = cropData.y.coerceIn(0, bitmap.height)
+        val width = cropData.width.coerceIn(0, bitmap.width - x)
+        val height = cropData.height.coerceIn(0, bitmap.height - y)
+
+        if (width <= 0 || height <= 0) return bitmap
+
+        return Bitmap.createBitmap(bitmap, x, y, width, height)
     }
 
     fun onDragStart(offset: Offset) {
@@ -223,21 +258,20 @@ internal class CropStateManager(
         return null
     }
 
-    private fun reset(bitmap: Bitmap, initialCropRect: Rect? = null) {
+    private fun reset(bitmap: Bitmap, initialCropData: CropData? = null) {
         coroutineScope.launch {
             setState(
                 state.value.canvasSize,
                 bitmap,
-                initialCropRect
+                initialCropData
             )
         }
     }
 
-
     private fun setState(
         canvasSize: Size,
         bitmap: Bitmap,
-        initialCropRect: Rect? = null
+        initialCropData: CropData? = null
     ) {
 
         if (canvasSize == Size.Zero) {
@@ -300,7 +334,7 @@ internal class CropStateManager(
         }
 
         val cropRect =
-            if (initialCropRect != null && initialCropRect != Rect.Zero) initialCropRect
+            if (initialCropData != null && initialCropData != CropData.Zero) calculateRectFromCropData(initialCropData)
             else Rect(cropOffset, cropSize)
 
         _state.update {
@@ -327,5 +361,4 @@ internal class CropStateManager(
     companion object {
         private const val MIN_CROP_SIZE = 250f
     }
-
 }
