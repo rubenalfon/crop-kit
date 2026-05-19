@@ -23,6 +23,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.math.max
+import kotlin.math.min
 
 internal class CropStateManager(
     bitmap: Bitmap,
@@ -107,10 +109,10 @@ internal class CropStateManager(
         val height = cropData.height * scaleY
 
         return Rect(
-            left = left,
-            top = top,
-            right = left + width,
-            bottom = top + height
+            left = max(left, imageRect.left),
+            top = max(top, imageRect.top),
+            right = min(left + width, imageRect.left),
+            bottom = min(top + height, imageRect.bottom)
         )
     }
 
