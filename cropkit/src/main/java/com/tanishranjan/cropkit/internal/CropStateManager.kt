@@ -46,9 +46,8 @@ internal class CropStateManager(
     }
 
     fun updateCanvasSize(canvasSize: Size) {
-        setState(canvasSize, state.value.bitmap, initialCropData = initialCropData)
+        setState(canvasSize, state.value.bitmap, initialCropData)
     }
-
 
     fun crop(): Bitmap {
         val state = state.value
@@ -78,6 +77,20 @@ internal class CropStateManager(
         val realH = (cropRect.height * scaleY).toInt()
 
         return CropData(realX, realY, realW, realH)
+    }
+
+    fun getCropRect(
+        initialCropData: CropData?,
+        cropOffset: Offset,
+        cropSize: Size,
+        imageRect: Rect
+    ): Rect {
+        if (initialCropData == null || initialCropData == CropData.Zero) {
+
+            return Rect(cropOffset, cropSize)
+        }
+
+        return calculateRectFromCropData(cropData = initialCropData, imageRect = imageRect)
     }
 
     fun calculateRectFromCropData(
@@ -274,7 +287,6 @@ internal class CropStateManager(
         bitmap: Bitmap,
         initialCropData: CropData? = null
     ) {
-
         if (canvasSize == Size.Zero) {
             return
         }
@@ -333,19 +345,18 @@ internal class CropStateManager(
             cropSize = Size(scaledSize.width, scaledSize.height)
             cropOffset = Offset(offsetX, offsetY)
         }
+        val imageRect = Rect(
+            Offset(offsetX, offsetY),
+            Size(scaledSize.width, scaledSize.height)
+        )
 
-        val cropRect =
-            if (initialCropData != null && initialCropData != CropData.Zero) calculateRectFromCropData(initialCropData)
-            else Rect(cropOffset, cropSize)
+        val cropRect = getCropRect(initialCropData, cropOffset, cropSize, imageRect)
 
         _state.update {
             it.copy(
                 canvasSize = canvasSize,
                 bitmap = bitmap,
-                imageRect = Rect(
-                    Offset(offsetX, offsetY),
-                    Size(scaledSize.width, scaledSize.height)
-                ),
+                imageRect = imageRect,
                 imageBitmap = scaledBitmap.asImageBitmap(),
                 cropRect = cropRect,
                 handles = GestureUtils.getNewHandleMeasures(cropRect, handleRadiusPx),

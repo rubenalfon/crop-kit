@@ -16,7 +16,6 @@ class CropController(
     val cropOptions: CropOptions,
     val cropColors: CropColors
 ) {
-
     private val stateManager: CropStateManager = CropStateManager(
         bitmap = bitmap,
         initialCropData = cropOptions.initialCropData,

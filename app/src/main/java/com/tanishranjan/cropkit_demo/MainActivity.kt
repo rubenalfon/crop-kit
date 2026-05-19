@@ -152,6 +152,14 @@ class MainActivity : ComponentActivity() {
                             Text(
                                 cropData.toString()
                             )
+
+                            var expand by remember { mutableStateOf(false) }
+                            Button(
+                                onClick = { expand = !expand}
+                            ) {
+                                Text("Expand", Modifier.padding(if (expand) 100.dp else 0.dp))
+                            }
+
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -176,6 +184,7 @@ class MainActivity : ComponentActivity() {
                                             selected = cropShape == CropShape.FreeForm,
                                             onClick = {
                                                 cropShape = CropShape.FreeForm
+                                                gridLinesType = GridLinesType.CROSSHAIR
                                             },
                                             shape = SegmentedButtonDefaults.itemShape(
                                                 index = 0,
@@ -189,6 +198,7 @@ class MainActivity : ComponentActivity() {
                                             selected = cropShape == CropShape.Original,
                                             onClick = {
                                                 cropShape = CropShape.Original
+                                                gridLinesType = GridLinesType.CROSSHAIR
                                             },
                                             shape = SegmentedButtonDefaults.itemShape(
                                                 index = 1,
