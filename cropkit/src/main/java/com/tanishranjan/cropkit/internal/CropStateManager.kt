@@ -102,16 +102,16 @@ internal class CropStateManager(
         val scaleX = imageRect.width / bitmap.width
         val scaleY = imageRect.height / bitmap.height
 
-        val top = (cropData.y * scaleY) + imageRect.top
-        val left = (cropData.x * scaleX) + imageRect.left
-        val width = cropData.width * scaleX
-        val height = cropData.height * scaleY
+        val mappedLeft = imageRect.left + (cropData.x * scaleX)
+        val mappedTop = imageRect.top + (cropData.y * scaleY)
+        val mappedRight = mappedLeft + (cropData.width * scaleX)
+        val mappedBottom = mappedTop + (cropData.height * scaleY)
 
         return Rect(
-            left = max(left, imageRect.left),
-            top = max(top, imageRect.top),
-            right = min(left + width, imageRect.right),
-            bottom = min(top + height, imageRect.bottom)
+            left = mappedLeft.coerceIn(imageRect.left, imageRect.right),
+            top = mappedTop.coerceIn(imageRect.top, imageRect.bottom),
+            right = mappedRight.coerceIn(imageRect.left, imageRect.right),
+            bottom = mappedBottom.coerceIn(imageRect.top, imageRect.bottom)
         )
     }
 
