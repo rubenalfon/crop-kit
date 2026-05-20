@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -74,13 +75,16 @@ class MainActivity : ComponentActivity() {
                 var cropShape: CropShape by remember { mutableStateOf(CropShape.Original) }
                 var gridLinesType by remember { mutableStateOf(GridLinesType.GRID) }
                 val cropController = image?.let {
-                    rememberCropController(
-                        bitmap = it,
-                        cropOptions = CropDefaults.cropOptions(
+                    val cropOptions = remember(it, cropShape, gridLinesType) {
+                        CropDefaults.cropOptions(
                             initialCropData = cropData,
                             cropShape = cropShape,
                             gridLinesType = gridLinesType
                         )
+                    }
+                    rememberCropController(
+                        bitmap = it,
+                        cropOptions = cropOptions
                     )
                 }
 
@@ -155,7 +159,7 @@ class MainActivity : ComponentActivity() {
 
                             var expand by remember { mutableStateOf(false) }
                             Button(
-                                onClick = { expand = !expand}
+                                onClick = { expand = !expand }
                             ) {
                                 Text("Expand", Modifier.padding(if (expand) 100.dp else 0.dp))
                             }

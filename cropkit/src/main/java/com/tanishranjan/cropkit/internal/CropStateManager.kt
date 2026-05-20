@@ -48,6 +48,7 @@ internal class CropStateManager(
     }
 
     fun updateCanvasSize(canvasSize: Size) {
+        if (canvasSize == Size.Zero || canvasSize == state.value.canvasSize) return
         setState(canvasSize, state.value.bitmap, initialCropData)
     }
 
@@ -292,6 +293,7 @@ internal class CropStateManager(
             return
         }
 
+        val currentState = _state.value
         val imageWidth = bitmap.width.toFloat()
         val imageHeight = bitmap.height.toFloat()
 
@@ -309,7 +311,16 @@ internal class CropStateManager(
             contentScale = contentScale
         )
 
-        val scaledBitmap = bitmap.scale(scaledSize.width.toInt(), scaledSize.height.toInt())
+        // Only re-scale if the bitmap or destination size changed
+        val imageBitmap = if (currentState.bitmap == bitmap &&
+            currentState.imageRect.size == scaledSize &&
+            currentState.imageBitmap != null
+        ) {
+            currentState.imageBitmap
+        } else {
+            val scaledBitmap = bitmap.scale(scaledSize.width.toInt(), scaledSize.height.toInt())
+            scaledBitmap.asImageBitmap()
+        }
 
         // Center within available space, then add padding offset
         val offsetX = contentPadding + (availableWidth - scaledSize.width) / 2f
@@ -358,7 +369,7 @@ internal class CropStateManager(
                 canvasSize = canvasSize,
                 bitmap = bitmap,
                 imageRect = imageRect,
-                imageBitmap = scaledBitmap.asImageBitmap(),
+                imageBitmap = imageBitmap,
                 cropRect = cropRect,
                 handles = GestureUtils.getNewHandleMeasures(cropRect, handleRadiusPx),
                 gridlinesActive = gridLinesVisibility == GridLinesVisibility.ALWAYS,
