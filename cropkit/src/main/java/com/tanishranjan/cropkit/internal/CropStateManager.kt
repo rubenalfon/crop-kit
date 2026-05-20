@@ -23,12 +23,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.math.max
-import kotlin.math.min
 
 internal class CropStateManager(
     bitmap: Bitmap,
-    private val initialCropData: CropData = CropData.Zero,
+    private var initialCropData: CropData = CropData.Zero,
     private val cropShape: CropShape,
     private val contentScale: ContentScale,
     private val gridLinesVisibility: GridLinesVisibility,
@@ -97,7 +95,7 @@ internal class CropStateManager(
     fun calculateRectFromCropData(
         cropData: CropData,
         bitmap: Bitmap = state.value.bitmap,
-        imageRect: Rect = state.value.imageRect
+        imageRect: Rect
     ): Rect {
         val scaleX = imageRect.width / bitmap.width
         val scaleY = imageRect.height / bitmap.height
@@ -191,6 +189,7 @@ internal class CropStateManager(
             bitmap.width, bitmap.height,
             matrix, true
         )
+        initialCropData = CropData.Zero
         reset(newBitmap)
     }
 
@@ -351,7 +350,12 @@ internal class CropStateManager(
             Size(scaledSize.width, scaledSize.height)
         )
 
-        val cropRect = getCropRect(initialCropData, cropOffset, cropSize, imageRect)
+        val cropRect = getCropRect(
+            initialCropData = initialCropData,
+            cropOffset = cropOffset,
+            cropSize = cropSize,
+            imageRect = imageRect
+        )
 
         _state.update {
             it.copy(
